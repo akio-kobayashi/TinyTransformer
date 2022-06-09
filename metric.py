@@ -1,5 +1,7 @@
 import torch
+import torch.nn as nn
 import numpy as np
+from einops import rearrange
 
 class ctc_loss(nn.Module):
     def __init__(self):
@@ -25,7 +27,7 @@ class ce_loss(nn.Module):
             loss += self.ce(prd,ref)
 
         return torch.mean(loss)
-        
+
 class IterMeter(object):
     """keeps track of total iterations"""
     def __init__(self):
