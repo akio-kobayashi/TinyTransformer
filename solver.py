@@ -94,7 +94,6 @@ def decode(model, loader, vocab, config):
                         per=metric.cer(target, pred)
                         pers.append(per)
 
-                        f.write('f{keys[j]}\n')
                         text=" ".join(vocab.to_string(target))
                         f.write(f'{keys[j]} REF: {text}\n')
                         text=" ".join(vocab.to_string(pred))
