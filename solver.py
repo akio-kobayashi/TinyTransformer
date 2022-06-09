@@ -25,6 +25,7 @@ def train(model, loader, optimizer, iterm, epoch, writer):
                             input_lengths.cuda(), label_lengths.cuda())
             loss.backward()
             optimizer.step()
+            iterm.step()
 
             if writer:
                 writer.add_scalar('loss', loss.item(), iterm.get())
