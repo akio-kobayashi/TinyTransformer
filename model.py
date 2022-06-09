@@ -117,7 +117,7 @@ class ASRModel(nn.Module):
 
             # 文頭記号 <bos>=2 のみからなるTensorを用意
             # デコードの進捗にともなってTensor ysは拡張していく
-            ys=torch.ones(np.array[[2]], dtype=torch.int).cuda()
+            ys=torch.tensor(np.array[[2]], dtype=torch.int).cuda()
             memory_mask=None
 
             #   系列長が不明であるため外部変数max_lenで上限を与える
