@@ -1,11 +1,11 @@
 {
     "data": "data/data.h5",
     "batch_size": 12,
-    "epochs": 20,
+    "epochs": 10,
     "output": "data/transformer/model.pt",
     "attention": "data/transformer/atts.h5",
     "decode": "data/transformer/decode.txt",
-    "learning_rate": 1e-06,
+    "learning_rate": 1e-05,
     "dim_model": 512,
     "dim_input": 320,
     "dim_output": 44,

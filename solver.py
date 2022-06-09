@@ -67,6 +67,11 @@ def test(model, loader, iterm, epoch, writer):
                 writer.add_scalar('test_cer', np.mean(cer), iterm.get())
     return np.mean(cer)
 
+'''
+    transformerによるデコード
+    音響特徴量から系列を推定してファイルに保存する．
+    デコード時のattention重みも保存する．
+'''
 def decode(model, loader, vocab, config):
     model.eval()
 
@@ -84,14 +89,16 @@ def decode(model, loader, vocab, config):
                                                     input_lengths[j],
                                                     max_len=label_lengths[j])
                         target = labels[j][:label_lengths[j]].tolist()
+
+                        # 音素誤り率(Phone Error Rate; PER)を計算
                         per=metric.cer(target, pred)
                         pers.append(per)
 
+                        f.write('f{keys[j]}\n')
                         text=" ".join(vocab.to_string(target))
                         f.write(f'{keys[j]} REF: {text}\n')
                         text=" ".join(vocab.to_string(pred))
                         f.write(f'{keys[j]} REF: {text}\n')
-
                         f.write(f'PER: {per:.3f}\n\n')
 
                         h5f.create_group(keys[j])
