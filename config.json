@@ -1,0 +1,23 @@
+{
+    "data": "data/data.h5",
+    "batch_size": 12,
+    "epochs": 10,
+    "output": "data/transformer/model.pt",
+    "attention": "data/transformer/atts.h5",
+    "decode": "data/transformer/decode.txt",
+    "learning_rate": 1e-05,
+    "dim_model": 512,
+    "dim_input": 320,
+    "dim_output": 44,
+    "dim_feedforward": 2048,
+    "num_encoder_layers": 6,
+    "num_decoder_layers": 6,
+    "num_heads": 8,
+    "model": "data/model.pt",
+    "vocab": "data/phone.vocab",
+    "vocab_type": "phone",
+    "seed": 7,
+    "stats": "data/stats.h5",
+    "reduction": 4,
+    "weight": 0.3
+}
