@@ -1,7 +1,7 @@
 {
     "data": "data/data.h5",
     "batch_size": 12,
-    "epochs": 10,
+    "epochs": 3,
     "output": "data/transformer/model.pt",
     "attention": "data/transformer/atts.h5",
     "decode": "data/transformer/decode.txt",
