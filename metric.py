@@ -1,6 +1,31 @@
 import torch
 import numpy as np
 
+class ctc_loss(nn.Module):
+    def __init__(self):
+        super(ctc_loss, self).__init__()
+        self.ctc=nn.CTCLoss()
+
+    def forward(self, outputs, labels, output_lengths, label_lengths):
+        outputs = rearrange(outputs, 'b t f -> t b f')
+
+        return  self.ctc(outputs.cuda(), labels.cuda(),
+                        output_lengths.cuda(), label_lengths.cuda())
+
+class ce_loss(nn.Module):
+    def __init__(self):
+        super(ce_loss, self).__init__()
+        self.ce=nn.CrossEntropyLoss()
+
+    def forward(self, y_prd, y_ref, y_prd_len, y_ref_len):
+        loss = 0.
+        for b in range(y_prd.shape[0]):
+            prd=y_prd[b, :y_prd_len[b], :]
+            ref=y_ref[b, :y_ref_len[b]]
+            loss += self.ce(prd,ref)
+
+        return torch.mean(loss)
+        
 class IterMeter(object):
     """keeps track of total iterations"""
     def __init__(self):
