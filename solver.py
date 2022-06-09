@@ -90,16 +90,12 @@ def decode(model, loader, vocab, config):
                         pers.append(per)
 
                         text=" ".join(vocab.to_string(target))
-                        print("REF : %s " % text)
                         f.write(f'{keys[j]} REF: {text}\n')
                         text=" ".join(vocab.to_string(pred))
-                        print("HYP : %s " % text)
                         f.write(f'{keys[j]} REF: {text}\n')
 
-                        print("PER : %.3f" % per)
                         f.write(f'PER: {per:.3f}\n\n')
 
                         h5f.create_group(keys[j])
                         for n, att in enumerate(atts):
                             h5f.create_dataset(keys[j]+'/attention_weight_'+str(n+1), data=att, compression='gzip', compression_opts=9)
-    print("Total PER : %.3f" % np.mean(pers))
