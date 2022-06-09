@@ -5,14 +5,13 @@ class IterMeter(object):
     """keeps track of total iterations"""
     def __init__(self):
         self._val = 0
-        self._epoch = 1
 
     def step(self):
         self._val += 1
 
     def get(self):
         return self._val
-        
+
 def _levenshtein_distance(ref, hyp):
     m = len(ref)
     n = len(hyp)

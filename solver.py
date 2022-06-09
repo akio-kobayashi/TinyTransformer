@@ -27,7 +27,7 @@ def train(model, loader, optimizer, iterm, epoch, writer):
             optimizer.step()
             iterm.step()
 
-            writer.add_scalar('loss', loss.item(), step=iterm.get())
+            writer.add_scalar('loss', loss.item(), iterm.get())
 
             bar.set_description("[Epoch %d]" % epoch)
             bar.set_postfix_str(f'{loss:.3f}')
@@ -63,8 +63,8 @@ def test(model, loader, iterm, epoch, writer):
                 bar.set_postfix_str(f'{np.mean(loss):.3f} {np.mean(cer):.3f}')
                 bar.update(len(inputs))
 
-                writer.add_scalar('test_loss', np.mean(loss), step=iterm.get())
-                writer.add_scalar('test_cer', np.mean(cer), step=iterm.get())
+                writer.add_scalar('test_loss', np.mean(loss), iterm.get())
+                writer.add_scalar('test_cer', np.mean(cer), iterm.get())
     return np.mean(cer)
 
 def decode(model, loader, vocab, config):
