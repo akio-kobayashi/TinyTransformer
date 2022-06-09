@@ -58,32 +58,57 @@ class ASRModel(nn.Module):
         # transformerの損失の重み
         self.weight = config['weight']
 
+    '''
+        transformerの順伝播関数
+        1. 特徴量および系列の前処理
+        2. マスクの計算
+        3. transformerのエンコーダー伝播
+        4. transformerのデコーダー伝播
+        5. transformerおよびCTCの損失を計算(マルチタスク学習)
+    '''
     def forward(self, inputs, labels, input_lengths, label_lengths):
 
+        # 入力系列は文頭から文末-1，
+        # 出力系列は系列を１つずらして文頭+1から文末まで
+        # 入力系列から１つあとのラベルを予測できる
         labels_in = labels[:, 0:labels.shape[-1]-1]
         labels_out = labels[:, 1:labels.shape[-1]]
-
         label_lengths -= 1
+
+        # 前処理
         y=self.prenet(self.enc_pe(inputs))
         z=self.dec_pe(self.dec_embed(labels_in))
+
+        # マスク作成
         source_mask, target_mask, source_padding_mask, target_padding_mask = self.generate_masks(y, z, input_lengths, label_lengths)
+
+        # transformer エンコーダー
+        # CTC損失を計算するため エンコーダー，デコーダーの伝播を分けておく
         memory = self.transformer.encoder(y.cuda(),
                                           mask=source_mask.cuda(),
                                           src_key_padding_mask=source_padding_mask.cuda())
 
-
+        # transformer デコーダー
         y = self.transformer.decoder(z.cuda(), memory, tgt_mask=target_mask.cuda(),
                                      memory_mask=None,
                                      tgt_key_padding_mask=target_padding_mask.cuda(),
                                      memory_key_padding_mask=source_padding_mask.cuda())
         y=self.fc(y)
 
+        # 損失の計算
         loss=self.loss(y, labels_out, label_lengths, label_lengths)
+        # CTC損失の計算
         y_ctc = (1. - self.weight ) * self.fc_ctc(memory)
+        # 重み付けして加算
         loss += self.weight * self.ctc(y_ctc, labels_out, input_lengths, label_lengths)
 
         return y, loss
 
+    '''
+        入力，出力系列のmaskを生成
+        tgt_mask: 現在よりも先の情報を用いないために作成するマスク
+        *_padding_mask: 終端にパディングされた特徴量を無視するためのマスク
+    '''
     def generate_masks(self, src, tgt, src_len, tgt_len):
         B=src.shape[0]
         S=src.shape[1]
@@ -104,6 +129,12 @@ class ASRModel(nn.Module):
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
         return mask
 
+    '''
+        greedy_decode
+        transformerにおける単純な探索
+        すべての音響特徴量，および過去の系列を入力として
+        系列長+1となる系列を予測する
+    '''
     def greedy_decode(self, src, src_len, max_len):
         with torch.no_grad():
             src_padding_mask = torch.ones(1, src.shape[1], dtype=bool).cuda()
@@ -128,6 +159,7 @@ class ASRModel(nn.Module):
                 # transformerデコーダへ
                 # memoryは入力のすべてのコンテキスト，zはデコード済みの系列
                 z = self.transformer.decoder(z, memory, tgt_mask=mask, memory_mask=memory_mask)
+                # デコーダーの層数分のattention weightを取得
                 atts = self.transformer.decoder._get_attention_weights()
 
                 # torch.argmaxにより，出力確率が最大となるインデックス（id）を取得
