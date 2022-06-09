@@ -20,7 +20,7 @@ def main():
 
     config = json.load(open('./config.json', 'r'))
 
-    writer = SummaryWriter(log_dir='./')
+    writer = SummaryWriter(log_dir='./logs')
     np.random.seed(config['seed'])
     random.seed(config['seed'])
     torch.manual_seed(config['seed'])
