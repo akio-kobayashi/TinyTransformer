@@ -109,43 +109,32 @@ class ASRModel(nn.Module):
             src_padding_mask = torch.ones(1, src.shape[1], dtype=bool).cuda()
             src_padding_mask[:, :src_len]=False
 
-            y = self.prenet(self.enc_pe(src))
-            '''
-                transformer エンコーダ
-                入力音響特徴量系列はすべて使うのでエンコーダを１回だけ伝播させる
-            '''
+            y = self.prenet(self.enc_pe(src.cuda()))
+
+            # transformer エンコーダ
+            # 入力音響特徴量系列はすべて使うのでエンコーダを１回だけ伝播させる
             memory = self.transformer.encoder(y.cuda(), src_key_padding_mask=src_padding_mask)
 
-            '''
-                文頭記号 <bos>=2 のみからなるTensorを用意
-                デコードの進捗にともなってTensor ysは拡張していく
-            '''
+            # 文頭記号 <bos>=2 のみからなるTensorを用意
+            # デコードの進捗にともなってTensor ysは拡張していく
             ys=torch.ones(np.array[[2]], dtype=torch.int).cuda()
             memory_mask=None
 
-        '''
-            系列長が不明であるため外部変数max_lenで上限を与える
-        '''
-        for i in range(max_len - 1):
-            with torch.no_grad():
+            #   系列長が不明であるため外部変数max_lenで上限を与える
+            for i in range(max_len - 1):
                 mask=self.generate_square_subsequent_mask(ys.shape[1]).cuda()
                 z = self.dec_pe(self.dec_embed(ys))
-                '''
-                    transformerデコーダへ
-                    memoryは入力のすべてのコンテキスト，zはデコード済みの系列
-                '''
+
+                # transformerデコーダへ
+                # memoryは入力のすべてのコンテキスト，zはデコード済みの系列
                 z = self.transformer.decoder(z, memory, tgt_mask=mask, memory_mask=memory_mask)
                 atts = self.transformer.decoder._get_attention_weights()
 
-                '''
-                    torch.argmaxにより，出力確率が最大となるインデックス（id）を取得
-                '''
+                # torch.argmaxにより，出力確率が最大となるインデックス（id）を取得
                 z = F.log_softmax(self.fc(z), dim=-1)
                 z = torch.argmax(z[:, -1, :]).reshape(1, 1)
 
-                '''
-                    系列に連結して拡張する
-                '''
+                # 系列に連結して拡張する
                 ys = torch.cat((ys, z), dim=1) #(1, T+1)
 
                 if z == 3: # 3は<eos>のid
