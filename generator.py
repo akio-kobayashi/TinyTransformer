@@ -53,6 +53,10 @@ class SpeechDataset(torch.utils.data.Dataset):
         return _input, _label, _key
 
 
+'''
+    data_processing
+    データ生成の後処理
+'''
 def data_processing(data):
 
     _inputs, _input_lengths = [], []

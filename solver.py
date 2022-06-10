@@ -10,25 +10,34 @@ import numpy as np
 from tqdm import tqdm
 import h5py
 
+'''
+    train
+    繰り返し１回分の学習を行う
+'''
 def train(model, loader, optimizer, iterm, epoch, writer):
     model.train()
 
     with tqdm(total=len(loader.dataset), leave=False) as bar:
         for batch_idx, _data in enumerate(loader):
+            # バッチ
             inputs, labels, input_lengths, label_lengths, _ = _data
-
+            # listからTensorへの変換
             input_lengths = torch.tensor(input_lengths).to(torch.int32)
             label_lengths = torch.tensor(label_lengths).to(torch.int32)
 
             optimizer.zero_grad()
+            # 音声認識モデルの順伝播を行う
+            # 返り値は予測系列と損失
             _, loss = model(inputs.cuda(), labels.cuda(),
                             input_lengths.cuda(), label_lengths.cuda())
             loss.backward()
             optimizer.step()
             iterm.step()
 
+            # tensorboard用に損失を書き出す
             writer.add_scalar('loss', loss.item(), iterm.get())
 
+            # 進捗バーの処理
             bar.set_description("[Epoch %d]" % epoch)
             bar.set_postfix_str(f'{loss:.3f}')
             bar.update(len(inputs))
@@ -37,6 +46,10 @@ def train(model, loader, optimizer, iterm, epoch, writer):
 
             torch.cuda.empty_cache()
 
+'''
+    test
+    バリデーションとデコード（greedy_decode）を行う
+'''
 def test(model, loader, iterm, epoch, writer):
     model.eval()
 
@@ -46,23 +59,30 @@ def test(model, loader, iterm, epoch, writer):
         with torch.no_grad():
             for i, _data in enumerate(loader):
                 inputs, labels, input_lengths, label_lengths, _ = _data
+                # listからTensorへの変換
                 input_lengths = torch.tensor(input_lengths).to(torch.int32)
                 label_lengths = torch.tensor(label_lengths).to(torch.int32)
 
+                # バリデーションは順伝播のみを行い損失を得る．
                 _, loss_value = model(inputs.cuda(), labels.cuda(),
                                     input_lengths.cuda(), label_lengths.cuda())
                 loss.append(loss_value.item())
 
+                # バッチ内のデータを１つずつデコード
                 for j in range(inputs.shape[0]):
                     pred, _ = model.greedy_decode(torch.unsqueeze(inputs[j],0),
                                                  input_lengths[j],
                                                  max_len=label_lengths[j])
                     target = labels[j][:label_lengths[j]].tolist()
+                    # PER(音素誤り率を計算)
                     cer.append(metric.cer(target, pred))
+
+                # 進捗バーの処理
                 bar.set_description("[Epoch %d]" % epoch)
                 bar.set_postfix_str(f'{np.mean(loss):.3f} {np.mean(cer):.3f}')
                 bar.update(len(inputs))
 
+                # tensorboard用に損失と誤り率の平均を書き出す
                 writer.add_scalar('test_loss', np.mean(loss), iterm.get())
                 writer.add_scalar('test_cer', np.mean(cer), iterm.get())
     return np.mean(cer)

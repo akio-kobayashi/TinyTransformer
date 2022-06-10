@@ -12,6 +12,7 @@ from metric import ctc_loss, ce_loss
     ASRModel
     音声認識モデル
     transformerに特徴量と系列の前処理，損失，デコーダーを実装
+    Colab Noteb以外ではこちらの定義を使う
 '''
 class ASRModel(nn.Module):
     def __init__(self, config):
