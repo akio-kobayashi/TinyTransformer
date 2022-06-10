@@ -16,6 +16,9 @@ from vocab import Vocab
 import metric
 import solver
 
+'''
+    Colab Notebook 以外で使う場合はasr.pyを実行する．
+'''
 def main():
 
     config = json.load(open('./config.json', 'r'))
