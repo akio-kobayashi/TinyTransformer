@@ -3,17 +3,26 @@ import torch.nn as nn
 import numpy as np
 from einops import rearrange
 
+'''
+    ctc_loss
+    マルチタスク学習のためのCTC損失関数
+'''
 class ctc_loss(nn.Module):
     def __init__(self):
         super(ctc_loss, self).__init__()
         self.ctc=nn.CTCLoss()
 
     def forward(self, outputs, labels, output_lengths, label_lengths):
+        # PyTorchのctc損失では時間次元を先頭に配置する必要があることに注意する
         outputs = rearrange(outputs, 'b t f -> t b f')
 
         return  self.ctc(outputs.cuda(), labels.cuda(),
                         output_lengths.cuda(), label_lengths.cuda())
 
+'''
+    ce_loss
+    Transformerのためのcross-entropy損失
+'''
 class ce_loss(nn.Module):
     def __init__(self):
         super(ce_loss, self).__init__()
@@ -28,8 +37,11 @@ class ce_loss(nn.Module):
 
         return torch.mean(loss)
 
+'''
+    IterMeter
+    optimizerによる更新回数を記録
+'''
 class IterMeter(object):
-    """keeps track of total iterations"""
     def __init__(self):
         self._val = 0
 
@@ -39,6 +51,10 @@ class IterMeter(object):
     def get(self):
         return self._val
 
+'''
+    _levenshtein_distance
+    2つの系列のLevenshtein距離（編集距離）を計算
+'''
 def _levenshtein_distance(ref, hyp):
     m = len(ref)
     n = len(hyp)
@@ -73,6 +89,10 @@ def _levenshtein_distance(ref, hyp):
                 distance[cur_row_idx][j] = min(s_num, i_num, d_num)
     return distance[m%2][n]
 
+'''
+    cer
+    文字誤り率（音素誤り率）を計算
+'''
 def cer(ref, hyp):
     edit_distance = _levenshtein_distance(ref, hyp)
 
