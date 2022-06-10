@@ -50,6 +50,9 @@ class ASRTransformerDecoderLayer(nn.TransformerDecoderLayer):
         super(ASRTransformerDecoderLayer, self).__init__(d_model, nhead, dim_feedforward, dropout, batch_first=batch_first, norm_first=norm_first)
         self.attention_weight=None
 
+    '''
+        Multi-head attention内で（単純に）need_weights=Trueにより重みを返しておく.
+    '''
     def _mha_block(self, x, mem, attn_mask=None, key_padding_mask=None):
         x, self.attention_weight = self.multihead_attn(x, mem, mem,
                                                        attn_mask=attn_mask,
