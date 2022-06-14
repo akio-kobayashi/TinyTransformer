@@ -97,10 +97,10 @@ class ASRModel(nn.Module):
         y=self.fc(y)
 
         # 損失の計算
-        loss=self.loss(y, labels_out, label_lengths, label_lengths)
-        # CTC損失の計算
-        y_ctc = (1. - self.weight ) * self.fc_ctc(memory)
-        # 重み付けして加算
+        loss=(1.-self.weight)*self.loss(y, labels_out, label_lengths, label_lengths)
+        # CTC系列の出力
+        y_ctc = self.fc_ctc(memory)
+        # CTC損失を重み付けして加算
         loss += self.weight * self.ctc(y_ctc, labels_out, input_lengths, label_lengths)
 
         return y, loss
