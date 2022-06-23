@@ -39,6 +39,7 @@ class Vocab:
         return [ self.id2word[n] for n in seq ]
 
     def remove_syms(self, seq):
+        return seq
         ret_seq=[]
         for s in seq:
             print(s)
