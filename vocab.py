@@ -41,6 +41,6 @@ class Vocab:
     def remove_syms(self, seq):
         ret_seq=[]
         for s in seq:
-            if self.id2word[s] != '<bos>' and self.id2word[s] != '<eos>':
+            if s != 2 and s != 3:
                  ret_seq.append(s)
         return ret_seq
