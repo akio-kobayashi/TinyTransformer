@@ -37,13 +37,3 @@ class Vocab:
     # デコード結果を視認する際に用いる
     def to_string(self, seq):
         return [ self.id2word[n] for n in seq ]
-
-    def remove_syms(self, seq):
-        return seq
-        ret_seq=[]
-        for s in seq:
-            print(s)
-            #if s == 2 or s == 3:
-            #    continue
-            ret_seq.append(s)
-        return ret_seq
