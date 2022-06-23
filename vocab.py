@@ -43,3 +43,4 @@ class Vocab:
         for s in seq:
             if self.id2word[s] != '<bos>' and self.id2word[s] != '<eos>':
                  ret_seq.append(s)
+        return ret_seq
