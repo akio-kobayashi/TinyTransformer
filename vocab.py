@@ -41,6 +41,7 @@ class Vocab:
     def remove_syms(self, seq):
         ret_seq=[]
         for s in seq:
+            print(s)
             #if s == 2 or s == 3:
             #    continue
             ret_seq.append(s)
