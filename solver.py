@@ -108,7 +108,8 @@ def decode(model, loader, vocab, config):
                         pred, atts = model.greedy_decode(torch.unsqueeze(inputs[j],0),
                                                     input_lengths[j],
                                                     max_len=label_lengths[j])
-                        target = labels[j][:label_lengths[j]].tolist()
+                        pred = vocab.remove_syms(pred)
+                        target = vocab.remove_syms(labels[j][:label_lengths[j]].tolist())
 
                         # 音素誤り率(Phone Error Rate; PER)を計算
                         per=metric.cer(target, pred)
